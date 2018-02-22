@@ -1,1 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Sensor Generator</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+    
+    <script type="text/javascript" src="js/svg.js.js"></script>
+
+    <script type="text/javascript" src="js/layerRenderer.js"></script>
+
+    <script type="text/javascript">
+        function generateSensor() {
+
+            console.log("hello world");
+
+            var completeDraw = SVG('home').size(300, 620);
+            var rxLayerDraw = SVG('RXLayer').size(300, 620);
+            var txLayerDraw = SVG('TXLayer').size(300, 620);
+            var dielectricLayerDraw = SVG('DieletricLayer').size(300, 620);
+
+            renderDielectric(dielectricLayerDraw);
+
+
+            
+            
+
+
+
+        }
+    </script>
+
+
+
+</head>
+<body>
+    <div class="container-fluid">
+        
+        <!---This div element is for getting the user input (svg shape)!!!-->
+        <div class="col-sm-6" style="background-color:lavender; padding-bottom: 50px;">
+            <h2>Input Shape</h2>
+            <div id="uploadDiv" class="uploader" onclick="onUpload()" style="text-align: center;">
+                <p id="selectSVG">Click 'Select svg' or drop here your input shape</p>
+                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 520"
+                     xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="520" x="0" y="0">
+                </svg>
+            </div>
+            <div class="fileUpload btn btn-primary btn-lg">
+                <span>Select svg</span>
+                <input type="file" name="upload_picture" id="svgFile" data-input="false" class="upload" />
+            </div>
+            <button onclick="generateSensor()" id="myBtn" class="btn btn-success btn-lg">Generate Sensor</button>
+            <button id="save" class="btn btn-info btn-lg" onclick="downloadSVG()" style="margin-left: 960px; margin-top: -60px; display:none;">Save</button>
+
+        </div>
+
+        <!---This div element is for rendering the result!!!-->
+
+        <div id="result" style="background-color:lavenderblush; padding-bottom: 10px;">
+            <div class="col-sm-6" style="background-color:lavenderblush; padding-bottom: 10px;">
+                <h2>Sensor Design</h2>
+                <div class="tabbable tabs-bottom">
+                    <ul class="nav nav-tabs">                   
+                        <li class="active"><a data-toggle="tab" href="#home">Complete</a></li>
+                        <li><a data-toggle="tab" href="#RXLayer">Receiver</a></li>
+                        <li><a data-toggle="tab" href="#TXLayer">Transmitter</a></li>
+                        <li><a data-toggle="tab" href="#DieletricLayer">Dielectric Layer</a></li>
+
+                    </ul>
+                    <div class="tab-content">
+
+                        <div id="home" class="tab-pane fade in active">
+                            <img id='ad' width="auto" height="auto" />
+                        </div>
+
+                        <div id="RXLayer" class="tab-pane fade">
+                        </div>
+                        
+                        <div id="TXLayer" class="tab-pane fade">
+                        </div>
+                        
+                        <div id="DieletricLayer" class="tab-pane fade">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    
+    
+    
+    
+    
+    </div>
+
+</body>
+</html>
