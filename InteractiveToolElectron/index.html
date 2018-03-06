@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Multi-Touch Sensor Designer</title>
+    <link rel = "stylesheet" href = "node_modules/photon/dist/css/photon.css"/> 
+    <link rel="stylesheet" href="node_modules/xel/stylesheets/material.theme.css">
+    <link rel="stylesheet" src="css/custom.css">
+    
+    <script src="node_modules/xel/xel.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>-->
+
+    <!--<script type="text/javascript" src="js/svg.js.js"></script>-->
+    <script type="text/javascript" src="js/libs/svg.js.js"></script>
+    <script type="text/javascript" src="js/libs/svg.draggable.js.js"></script>
+    <script type="text/javascript" src="js/libs/svg.resize.js.js"></script>
+    <script type="text/javascript" src="js/libs/svg.select.js.js"></script>
+
+
+    <script type="text/javascript" src="js/utils/ElectrodeGenerator.js"></script>
+    <script type="text/javascript" src="js/utils/polygon_utils.js"></script>
+    <script type="text/javascript" src="js/utils/utils.js"></script>
+    <script type="text/javascript">
+
+
+
+        window.onload = function () {
+
+            var draw = SVG('drawing').size(1000, 1000);
+            var electrodeSize = 10;
+            var rowElectrodes = new Array();
+            var columnElectrodes = new Array();
+
+
+            var electrodeSpacing = electrodeSize * 1.7;
+            var rowSpacing = electrodeSize * 1.7;
+            var numColumns, numRows;
+
+            var pointList = [[105.400, 226.100], [56.500, 195.100], [42.500, 141.500], [67.500, 68.300], [110.400, 46.500], [156.700, 60.900], [137.400, 109.900], [118.600, 117.000], [90.600, 166.700], [114.300, 213.500], [105.400, 226.100]];
+
+
+            electrodeResSlider.oninput = function () {
+                draw.clear();
+
+                console.log(this.value);
+                electrodeSize = this.value;
+                electrodeSpacing = electrodeSize * 1.7;
+                rowSpacing = electrodeSize * 1.7;
+                rowElectrodes = [];
+                columnElectrodes = [];
+
+                var inputPolygon = draw.polygon(pointList);
+                inputPolygon.fill('none').move(300, 300);
+                inputPolygon.scale(1, 1);
+                // inputPolygon.scale(scalingValue, scalingValue);
+                inputPolygon.stroke({ color: '#f06', width: 2, linecap: 'round', linejoin: 'round' });
+
+
+                var polyBBox = generateBoundingBox(pointList, draw);
+
+                numColumns = Math.floor(polyBBox.width() / (electrodeSize * 1.7));
+                console.log("Num rows : " + numColumns);
+                numRows = Math.floor(polyBBox.height() / (electrodeSize * 1.7));
+                console.log("Num columns : " + numRows);
+
+                var pointArray = new SVG.PointArray();
+                pointArray = inputPolygon.array();
+                console.log(pointArray);
+                var pointString = pointArray.toString();
+                var listOfPoints = pointString.split(' ');
+
+
+                var xPos = [];
+                var yPos = [];
+                for (var i = 0; i < listOfPoints.length; i++) {
+
+                    xPos[i] = parseFloat(listOfPoints[i].split(',')[0]);
+                    yPos[i] = parseFloat(listOfPoints[i].split(',')[1]);
+
+                }
+
+                var polygonPoints = [[,], [,]]
+                var tempPoint = [];
+
+                for (var i = 0; i < xPos.length; i++) {
+
+                    tempPoint.push(xPos[i], yPos[i]);// = xPos[i];
+                    polygonPoints[i] = tempPoint;
+                    tempPoint = [];
+
+                }
+                console.log(polygonPoints);
+
+                rowElectrodes = generateRows(numRows, numColumns, electrodeSize, electrodeSpacing, rowSpacing, polyBBox.cx() - polyBBox.width() / 2, polyBBox.cy() - polyBBox.height() / 2, rowElectrodes, draw);
+                columnElectrodes = generateColumns(numRows, numColumns, electrodeSize, electrodeSpacing, rowSpacing, (polyBBox.cx() - polyBBox.width() / 2) + (electrodeSpacing * 0.5), (polyBBox.cy() - polyBBox.height() / 2) - (electrodeSpacing * 0.5), columnElectrodes, draw);
+
+                rowElectrodes = filterRows(rowElectrodes, columnElectrodes, pointList, numRows, numColumns, draw, );
+                columnElectrodes = filterColumns(rowElectrodes, columnElectrodes, pointList, numRows, numColumns, draw);
+
+                rowElectrodes = checkForDanglingRowElectrodes(rowElectrodes, columnElectrodes, pointList, draw);
+                columnElectrodes = checkForDanglingColumnElectrodes(rowElectrodes, columnElectrodes, pointList, draw);
+
+                filteredRowElectrodes = getActiveElectrodes(rowElectrodes);
+                filteredColumnElectrodes = getActiveElectrodes(columnElectrodes); 
+
+
+            }
+           
+            //var path = draw.polygon('105.400 226.100, 56.500 195.100, 42.500 141.500, 67.500 68.300, 110.400 46.500, 156.700 60.900, 137.400 109.900, 118.600 117.000, 90.600 166.700, 114.300 213.500, 105.400 226.100')
+            var inputPolygon = draw.polygon(pointList);
+            inputPolygon.fill('none').move(300, 300);
+            inputPolygon.scale(1, 1);
+           // inputPolygon.scale(scalingValue, scalingValue);
+            inputPolygon.stroke({ color: '#f06', width: 2, linecap: 'round', linejoin: 'round' });
+
+
+            var polyBBox = generateBoundingBox(pointList, draw);
+
+            numColumns = Math.floor(polyBBox.width() / (electrodeSize * 1.7));
+            console.log("Num rows : " + numColumns);
+            numRows = Math.floor(polyBBox.height() / (electrodeSize * 1.7));
+            console.log("Num columns : " + numRows);
+
+            var pointArray = new SVG.PointArray();
+            pointArray = inputPolygon.array();
+            console.log(pointArray);
+            var pointString = pointArray.toString();
+            var listOfPoints = pointString.split(' ');
+
+
+            var xPos = [];
+            var yPos = [];
+            for (var i = 0; i < listOfPoints.length; i++) {
+
+                xPos[i] = parseFloat(listOfPoints[i].split(',')[0]);
+                yPos[i] = parseFloat(listOfPoints[i].split(',')[1]);
+
+            }
+
+            var polygonPoints = [[,], [,]]
+            var tempPoint = [];
+
+            for (var i = 0; i < xPos.length; i++) {
+
+                tempPoint.push(xPos[i], yPos[i]);// = xPos[i];
+                polygonPoints[i] = tempPoint;
+                tempPoint = [];
+
+            }
+            console.log(polygonPoints);
+
+            rowElectrodes = generateRows(numRows, numColumns, electrodeSize, electrodeSpacing, rowSpacing, polyBBox.cx() - polyBBox.width() / 2, polyBBox.cy() - polyBBox.height() / 2, rowElectrodes, draw);
+            columnElectrodes = generateColumns(numRows, numColumns, electrodeSize, electrodeSpacing, rowSpacing, (polyBBox.cx() - polyBBox.width() / 2) + (electrodeSpacing * 0.5), (polyBBox.cy() - polyBBox.height() / 2) - (electrodeSpacing * 0.5), columnElectrodes, draw);
+
+            rowElectrodes = filterRows(rowElectrodes, columnElectrodes, pointList, numRows, numColumns, draw, );
+            columnElectrodes = filterColumns(rowElectrodes, columnElectrodes, pointList, numRows, numColumns, draw);
+
+            rowElectrodes = checkForDanglingRowElectrodes(rowElectrodes, columnElectrodes, pointList, draw);
+            columnElectrodes = checkForDanglingColumnElectrodes(rowElectrodes, columnElectrodes, pointList, draw);
+
+            filteredRowElectrodes = getActiveElectrodes(rowElectrodes);
+            filteredColumnElectrodes = getActiveElectrodes(columnElectrodes);         
+
+            
+        }
+    </script>
+
+
+</head>
+<body>
+    <div class = "window" > 
+        <div class = "window-content" > 
+          <div class = "pane-group" > 
+            <div class = "pane-sm sidebar" > Sidebar 
+                <x-buttons tracking="0">
+                    <x-button>
+                      <x-icon name="resize"></x-icon>
+                    </x-button>
+                  
+                    <x-button>
+                      <x-icon name="upload"></x-icon>
+                    </x-button>                              
+                </x-buttons>
+
+                <x-buttons tracking="0">
+                    <x-button toggled>
+                      <x-icon name="extension"></x-icon>
+                    </x-button>
+                  
+                    <x-button>
+                      <x-icon name="favorite"></x-icon>
+                    </x-button>                                  
+                </x-buttons>
+
+              <br/>
+                <div id="slidecontainer">
+                    <h5> Electrode Resolution </h5>
+                    <input type="range" min="5" max="20" value="10" class="slider" id="electrodeResSlider">
+                </div>
+            </div> 
+            <x-box id="drawing" class= "panel-body" >           
+            </x-box>
+              <x-box>
+                  <x-icon name="mail"></x-icon>
+                  <x-icon name="delete"></x-icon>
+                  <x-icon name="settings"></x-icon>
+              </x-box>
+            
+              <!--<div class="container">
+                  <h2>Fabrication Parameters</h2>
+                  <p>The panel-group class clears the bottom-margin. Try to remove the class and see what happens.</p>
+                  <div class="panel-group">
+                      <div class="panel panel-default">
+                          <div class="panel-heading">Panel Header</div>
+                          <div class="panel-body">Panel Content</div>
+                      </div>
+                      <div class="panel panel-default">
+                          <div class="panel-heading">Panel Header</div>
+                          <div class="panel-body">Panel Content</div>
+                      </div>
+                      <div class="panel panel-default">
+                          <div class="panel-heading">Panel Header</div>
+                          <div class="panel-body">Panel Content</div>
+                      </div>
+                  </div>
+                 
+              </div>-->
+             
+
+          </Div>
+            
+        </Div>
+      </Div>
+
+
+</body>
+</html>
